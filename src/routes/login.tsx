@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router';
 import { LockKeyhole } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
@@ -16,20 +16,20 @@ function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const isSuccess = login({
+    const error = login({
       email,
       password,
     });
 
-    if (!isSuccess) {
-      setErrorMessage('Invalid email or password');
+    if (error) {
+      setErrorMessage(error);
       return;
     }
 
@@ -48,10 +48,10 @@ function LoginPage() {
 
             <div>
               <h1 className="text-2xl font-bold text-slate-950">
-                Testing Dashboard
+                Welcome back
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Sign in to manage medication testing processes.
+                Sign in to continue to Testing Dashboard.
               </p>
             </div>
           </div>
@@ -62,7 +62,7 @@ function LoginPage() {
               <Input
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="you@example.com"
                   type="email"
               />
             </div>
@@ -72,7 +72,7 @@ function LoginPage() {
               <Input
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  placeholder="admin123"
+                  placeholder="Your password"
                   type="password"
               />
             </div>
@@ -86,13 +86,14 @@ function LoginPage() {
             <Button className="w-full" type="submit">
               Sign in
             </Button>
-
-            <div className="rounded bg-slate-50 p-3 text-xs text-slate-500">
-              <p>Test credentials:</p>
-              <p>Email: admin@example.com</p>
-              <p>Password: admin123</p>
-            </div>
           </form>
+
+          <p className="mt-5 text-center text-sm text-slate-500">
+            Don&apos;t have an account?{' '}
+            <Link to="/register" className="font-medium text-blue-600">
+              Create account
+            </Link>
+          </p>
         </div>
       </div>
   );

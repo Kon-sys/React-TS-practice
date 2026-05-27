@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TablesRouteImport } from './routes/tables'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProcessRouteImport } from './routes/process'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocumentationRouteImport } from './routes/documentation'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const TablesRoute = TablesRouteImport.update({
   id: '/tables',
   path: '/tables',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProcessRoute = ProcessRouteImport.update({
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/documentation': typeof DocumentationRoute
   '/login': typeof LoginRoute
   '/process': typeof ProcessRoute
+  '/register': typeof RegisterRoute
   '/tables': typeof TablesRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/documentation': typeof DocumentationRoute
   '/login': typeof LoginRoute
   '/process': typeof ProcessRoute
+  '/register': typeof RegisterRoute
   '/tables': typeof TablesRoute
 }
 export interface FileRoutesById {
@@ -61,14 +69,28 @@ export interface FileRoutesById {
   '/documentation': typeof DocumentationRoute
   '/login': typeof LoginRoute
   '/process': typeof ProcessRoute
+  '/register': typeof RegisterRoute
   '/tables': typeof TablesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/documentation' | '/login' | '/process' | '/tables'
+  fullPaths:
+    | '/'
+    | '/documentation'
+    | '/login'
+    | '/process'
+    | '/register'
+    | '/tables'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/documentation' | '/login' | '/process' | '/tables'
-  id: '__root__' | '/' | '/documentation' | '/login' | '/process' | '/tables'
+  to: '/' | '/documentation' | '/login' | '/process' | '/register' | '/tables'
+  id:
+    | '__root__'
+    | '/'
+    | '/documentation'
+    | '/login'
+    | '/process'
+    | '/register'
+    | '/tables'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +98,7 @@ export interface RootRouteChildren {
   DocumentationRoute: typeof DocumentationRoute
   LoginRoute: typeof LoginRoute
   ProcessRoute: typeof ProcessRoute
+  RegisterRoute: typeof RegisterRoute
   TablesRoute: typeof TablesRoute
 }
 
@@ -86,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/tables'
       fullPath: '/tables'
       preLoaderRoute: typeof TablesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/process': {
@@ -124,6 +154,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentationRoute: DocumentationRoute,
   LoginRoute: LoginRoute,
   ProcessRoute: ProcessRoute,
+  RegisterRoute: RegisterRoute,
   TablesRoute: TablesRoute,
 }
 export const routeTree = rootRouteImport

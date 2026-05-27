@@ -9,6 +9,7 @@ import {
     Network,
     Sun,
     Table2,
+    CircleUserRound,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -52,17 +53,17 @@ export function AppLayout() {
     const location = useLocation();
     const { isAuthenticated, logout, user } = useAuth();
 
-    const isLoginPage = location.pathname === '/login';
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
-    if (!isAuthenticated && !isLoginPage) {
+    if (!isAuthenticated && !isAuthPage) {
         return <Navigate to="/login" />;
     }
 
-    if (isAuthenticated && isLoginPage) {
+    if (isAuthenticated && isAuthPage) {
         return <Navigate to="/" />;
     }
 
-    if (isLoginPage) {
+    if (isAuthPage) {
         return <Outlet />;
     }
 
@@ -112,12 +113,8 @@ export function AppLayout() {
                         <p className="text-[11px] text-slate-500">{user?.email}</p>
                     </div>
 
-                    <div className="h-8 w-8 overflow-hidden rounded-full bg-slate-200 md:h-9 md:w-9">
-                        <img
-                            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
-                            alt="User avatar"
-                            className="h-full w-full object-cover"
-                        />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 ring-1 ring-slate-200 md:h-9 md:w-9">
+                        <CircleUserRound className="h-5 w-5" />
                     </div>
 
                     <Button variant="ghost" size="icon" onClick={logout}>

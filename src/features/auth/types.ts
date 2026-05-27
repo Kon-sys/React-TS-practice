@@ -1,10 +1,21 @@
 export type AuthUser = {
-    email: string;
+    id: string;
     name: string;
-    role: 'admin';
+    email: string;
+    role: 'user';
+};
+
+export type StoredUser = AuthUser & {
+    password: string;
 };
 
 export type LoginPayload = {
+    email: string;
+    password: string;
+};
+
+export type RegisterPayload = {
+    name: string;
     email: string;
     password: string;
 };
