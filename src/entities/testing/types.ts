@@ -1,0 +1,60 @@
+export type SummaryItem = {
+    id: number;
+    title: string;
+    subtitle: string;
+    value: string;
+    variant: 'success' | 'warning' | 'danger';
+};
+
+export type ChartPoint = {
+    name: string;
+    received: number;
+    completed: number;
+};
+
+export type SmallChartPoint = {
+    name: string;
+    value: number;
+};
+
+export type TestingProcessPart = {
+    name: string;
+    value: number;
+};
+
+export type MedicineRow = {
+    id: number;
+    name: string;
+    location: string;
+    startDate: string;
+    endDate: string;
+    successReaction: boolean;
+    processCurrent: number;
+    processTotal: number;
+    status: {
+        blue: number;
+        red: number;
+        orange: number;
+        green: number;
+    };
+};
+
+export type EventDetails = {
+    title: string;
+    place: string;
+    address: string;
+    date: string;
+    time: string;
+    manufacturer: string;
+    mapImageUrl: string;
+    tags: string[];
+    description: string;
+};
+
+export type DashboardData = {
+    summary: SummaryItem[];
+    totalTests: ChartPoint[];
+    testedDrugs: SmallChartPoint[];
+    approvalRates: SmallChartPoint[];
+    testingProcess: TestingProcessPart[];
+};
