@@ -1,9 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Calendar, MapPin, Navigation } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { CircleMarker, MapContainer, Popup, TileLayer } from 'react-leaflet';
-
-import 'leaflet/dist/leaflet.css';
 
 import { useEventDetailsQuery } from '@/entities/testing/queries';
 
@@ -13,8 +10,6 @@ import { Button } from '@/components/ui/button';
 export const Route = createFileRoute('/process')({
   component: ProcessPage,
 });
-
-const eventPosition: [number, number] = [40.6638, -73.9235];
 
 function ProcessPage() {
   const { data: event, isLoading, isError } = useEventDetailsQuery();
@@ -85,31 +80,12 @@ function ProcessPage() {
             <h2 className="text-2xl font-bold text-slate-950">Location</h2>
 
             <div className="h-40 overflow-hidden rounded bg-slate-200">
-              <MapContainer
-                  center={eventPosition}
-                  zoom={14}
-                  zoomControl={false}
-                  scrollWheelZoom={false}
-                  dragging={false}
-                  className="h-full w-full grayscale"
-              >
-                <TileLayer
-                    attribution="&copy; OpenStreetMap contributors"
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-
-                <CircleMarker
-                    center={eventPosition}
-                    radius={8}
-                    pathOptions={{
-                      color: '#2563eb',
-                      fillColor: '#2563eb',
-                      fillOpacity: 0.9,
-                    }}
-                >
-                  <Popup>{event.address}</Popup>
-                </CircleMarker>
-              </MapContainer>
+              <iframe
+                  title="Event location map"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=-73.9309%2C40.6588%2C-73.9161%2C40.6688&layer=mapnik&marker=40.6638%2C-73.9235"
+                  className="h-full w-full border-0 grayscale"
+                  loading="lazy"
+              />
             </div>
 
             <div className="flex items-start justify-between gap-4 text-xs text-slate-500">

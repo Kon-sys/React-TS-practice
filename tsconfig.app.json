@@ -23,7 +23,8 @@
       "@/*": ["./src/*"]
     },
 
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"]
 }
