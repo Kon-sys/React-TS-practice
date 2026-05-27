@@ -14,6 +14,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProcessRouteImport } from './routes/process'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DocumentationRouteImport } from './routes/documentation'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TablesRoute = TablesRouteImport.update({
@@ -41,6 +42,11 @@ const DocumentationRoute = DocumentationRouteImport.update({
   path: '/documentation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -49,6 +55,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
   '/documentation': typeof DocumentationRoute
   '/login': typeof LoginRoute
   '/process': typeof ProcessRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
   '/documentation': typeof DocumentationRoute
   '/login': typeof LoginRoute
   '/process': typeof ProcessRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chat': typeof ChatRoute
   '/documentation': typeof DocumentationRoute
   '/login': typeof LoginRoute
   '/process': typeof ProcessRoute
@@ -76,16 +85,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/chat'
     | '/documentation'
     | '/login'
     | '/process'
     | '/register'
     | '/tables'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/documentation' | '/login' | '/process' | '/register' | '/tables'
+  to:
+    | '/'
+    | '/chat'
+    | '/documentation'
+    | '/login'
+    | '/process'
+    | '/register'
+    | '/tables'
   id:
     | '__root__'
     | '/'
+    | '/chat'
     | '/documentation'
     | '/login'
     | '/process'
@@ -95,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChatRoute: typeof ChatRoute
   DocumentationRoute: typeof DocumentationRoute
   LoginRoute: typeof LoginRoute
   ProcessRoute: typeof ProcessRoute
@@ -139,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocumentationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -151,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChatRoute: ChatRoute,
   DocumentationRoute: DocumentationRoute,
   LoginRoute: LoginRoute,
   ProcessRoute: ProcessRoute,

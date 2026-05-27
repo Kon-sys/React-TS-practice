@@ -10,6 +10,7 @@ import {
     Sun,
     Table2,
     CircleUserRound,
+    MessageCircle,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -46,6 +47,11 @@ const navItems = [
         to: '/documentation',
         label: 'Documentation',
         icon: FileText,
+    },
+    {
+        to: '/chat',
+        label: 'Chat',
+        icon: MessageCircle,
     },
 ] as const;
 
