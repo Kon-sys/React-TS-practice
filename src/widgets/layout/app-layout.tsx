@@ -17,6 +17,9 @@ import {
     Sheet,
     SheetClose,
     SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
 
@@ -143,14 +146,12 @@ function MobileNavigation() {
 
             <SheetContent side="left" className="w-72">
                 <div className="space-y-6">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-950">
-                            Testing Dashboard
-                        </h2>
-                        <p className="text-sm text-slate-500">
+                    <SheetHeader>
+                        <SheetTitle>Testing Dashboard</SheetTitle>
+                        <SheetDescription>
                             Medication testing analytics
-                        </p>
-                    </div>
+                        </SheetDescription>
+                    </SheetHeader>
 
                     <nav className="space-y-2">
                         {navItems.map((item) => {

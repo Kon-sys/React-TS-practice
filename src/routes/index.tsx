@@ -15,21 +15,29 @@ import {
 
 import { useDashboardQuery } from '@/entities/testing/queries';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-
 export const Route = createFileRoute('/')({
     component: DashboardPage,
 });
 
 function DashboardPage() {
-    const { data, isLoading } = useDashboardQuery();
+    const { data, isLoading, isError } = useDashboardQuery();
 
-    if (isLoading || !data) {
+    if (isLoading) {
         return (
             <div className="space-y-6">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-72 w-full" />
+                <div className="h-20 animate-pulse rounded-xl bg-slate-200" />
+                <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
+                    <div className="h-[420px] animate-pulse rounded-xl bg-slate-200" />
+                    <div className="h-[420px] animate-pulse rounded-xl bg-slate-200" />
+                </div>
+            </div>
+        );
+    }
+
+    if (isError || !data) {
+        return (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-600">
+                Failed to load dashboard data
             </div>
         );
     }
@@ -40,7 +48,9 @@ function DashboardPage() {
                 <h1 className="text-2xl font-bold tracking-tight text-slate-950">
                     Testing Dashboard
                 </h1>
-                <p className="text-sm text-slate-500">Uncover insights on your testing processes.</p>
+                <p className="text-sm text-slate-500">
+                    Uncover insights on your testing processes.
+                </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
@@ -55,154 +65,179 @@ function DashboardPage() {
             </div>
 
             <div className="grid gap-6 xl:grid-cols-[1fr_420px]">
-                <Card className="border-slate-200 bg-transparent shadow-none">
-                    <CardHeader className="flex flex-row items-start justify-between px-0">
+                <section className="rounded-xl border border-slate-200 bg-white p-5">
+                    <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
                         <div>
-                            <CardTitle className="text-base font-bold">Total tests</CardTitle>
-                            <p className="text-xs text-slate-500">Testing results received in all areas</p>
+                            <h2 className="text-base font-bold text-slate-950">
+                                Total tests
+                            </h2>
+                            <p className="text-xs text-slate-500">
+                                Testing results received in all areas
+                            </p>
                         </div>
 
-                        <div className="rounded border bg-white px-3 py-2 text-xs text-slate-500">
+                        <div className="w-fit rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
                             Mar 1 - 31, 2022
                         </div>
-                    </CardHeader>
+                    </div>
 
-                    <CardContent className="h-[320px] px-0">
+                    <div className="h-[320px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={data.totalTests}>
-                                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                                <XAxis
+                                    dataKey="name"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tick={{ fontSize: 11 }}
+                                />
                                 <YAxis hide />
                                 <Line
                                     type="linear"
                                     dataKey="received"
-                                    stroke="#3b73ff"
+                                    stroke="#2563eb"
                                     strokeWidth={2}
                                     dot={false}
                                 />
                                 <Line
                                     type="linear"
                                     dataKey="completed"
-                                    stroke="#8ec5ff"
-                                    strokeWidth={1}
-                                    strokeDasharray="3 3"
+                                    stroke="#93c5fd"
+                                    strokeWidth={2}
+                                    strokeDasharray="4 4"
                                     dot={false}
                                 />
                             </LineChart>
                         </ResponsiveContainer>
-                    </CardContent>
-                </Card>
+                    </div>
 
-                <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <CardTitle className="text-base font-bold">Total tested drugs</CardTitle>
-                                    <p className="text-xs text-slate-500">Last 7 days</p>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm font-bold">
-                  <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] text-orange-500">
-                    -6.8%
-                  </span>
-                                    16,247
-                                </div>
-                            </div>
-                        </CardHeader>
+                    <div className="mt-4 flex flex-wrap gap-5">
+                        <LegendRow label="Received tests" value="Current period" color="bg-blue-600" />
+                        <LegendRow label="Completed tests" value="Previous period" color="bg-blue-200" />
+                    </div>
+                </section>
 
-                        <CardContent className="space-y-4">
-                            <div className="h-[120px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={data.testedDrugs}>
-                                        <XAxis dataKey="name" hide />
-                                        <YAxis hide />
-                                        <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#3b73ff" />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                <aside className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
+                    <section className="rounded-xl border border-slate-200 bg-white p-5">
+                        <div className="mb-4 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-base font-bold text-slate-950">
+                                    Total tested drugs
+                                </h2>
+                                <p className="text-xs text-slate-500">Last 7 days</p>
                             </div>
 
-                            <LegendRow label="Completed" value="52%" color="bg-blue-500" />
+                            <div className="text-right">
+                <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-bold text-orange-500">
+                  -6.8%
+                </span>
+                                <p className="mt-1 text-sm font-bold text-slate-950">16,247</p>
+                            </div>
+                        </div>
+
+                        <div className="h-[120px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={data.testedDrugs}>
+                                    <XAxis dataKey="name" hide />
+                                    <YAxis hide />
+                                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#2563eb" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        <div className="mt-4 space-y-3">
+                            <LegendRow label="Completed" value="52%" color="bg-blue-600" />
                             <LegendRow label="Awaiting results" value="48%" color="bg-blue-100" />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </section>
 
-                    <Card>
-                        <CardHeader>
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <CardTitle className="text-base font-bold">Drug approval rates</CardTitle>
-                                    <p className="text-xs text-slate-500">Last 7 days</p>
-                                </div>
-                                <div className="flex items-center gap-3 text-sm font-bold">
-                  <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] text-orange-500">
-                    +26.5%
-                  </span>
-                                    356
-                                </div>
+                    <section className="rounded-xl border border-slate-200 bg-white p-5">
+                        <div className="mb-4 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-base font-bold text-slate-950">
+                                    Drug approval rates
+                                </h2>
+                                <p className="text-xs text-slate-500">Last 7 days</p>
                             </div>
-                        </CardHeader>
 
-                        <CardContent className="h-[150px]">
+                            <div className="text-right">
+                <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-bold text-orange-500">
+                  +26.5%
+                </span>
+                                <p className="mt-1 text-sm font-bold text-slate-950">356</p>
+                            </div>
+                        </div>
+
+                        <div className="h-[150px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={data.approvalRates}>
-                                    <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                                    <XAxis
+                                        dataKey="name"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tick={{ fontSize: 11 }}
+                                    />
                                     <YAxis hide />
                                     <Line
                                         type="linear"
                                         dataKey="value"
-                                        stroke="#3b73ff"
+                                        stroke="#2563eb"
                                         strokeWidth={2}
                                         dot={false}
                                     />
                                 </LineChart>
                             </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </section>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base font-bold">Testing process</CardTitle>
+                    <section className="rounded-xl border border-slate-200 bg-white p-5">
+                        <div className="mb-4">
+                            <h2 className="text-base font-bold text-slate-950">
+                                Testing process
+                            </h2>
                             <p className="text-xs text-slate-500">Last 7 days</p>
-                        </CardHeader>
+                        </div>
 
-                        <CardContent className="space-y-4">
-                            <div className="mx-auto h-[120px] w-[120px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={data.testingProcess}
-                                            dataKey="value"
-                                            innerRadius={45}
-                                            outerRadius={58}
-                                            paddingAngle={2}
-                                        >
-                                            <Cell fill="#3b73ff" />
-                                            <Cell fill="#dbeafe" />
-                                            <Cell fill="#38bdf8" />
-                                        </Pie>
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
+                        <div className="mx-auto h-[130px] w-[130px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={data.testingProcess}
+                                        dataKey="value"
+                                        innerRadius={46}
+                                        outerRadius={62}
+                                        paddingAngle={2}
+                                    >
+                                        <Cell fill="#2563eb" />
+                                        <Cell fill="#dbeafe" />
+                                        <Cell fill="#38bdf8" />
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
 
-                            <LegendRow label="Preclinical testing" value="72%" color="bg-blue-500" />
+                        <div className="mt-4 space-y-3">
+                            <LegendRow label="Preclinical testing" value="72%" color="bg-blue-600" />
                             <LegendRow label="Clinical trials" value="18%" color="bg-blue-100" />
                             <LegendRow label="Regulatory approval" value="10%" color="bg-sky-400" />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </section>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-base font-bold">Number of people tested</CardTitle>
+                    <section className="rounded-xl border border-slate-200 bg-white p-5">
+                        <div className="mb-5">
+                            <h2 className="text-base font-bold text-slate-950">
+                                Number of people tested
+                            </h2>
                             <p className="text-xs text-slate-500">Last 7 days</p>
-                        </CardHeader>
+                        </div>
 
-                        <CardContent className="space-y-5">
-                            <div className="mx-auto h-20 w-32 rounded-t-full border-[10px] border-b-0 border-blue-500 border-r-blue-100" />
+                        <div className="mx-auto h-20 w-36 rounded-t-full border-[12px] border-b-0 border-blue-600 border-r-blue-100" />
 
-                            <LegendRow label="Tested" value="70%" color="bg-blue-500" />
+                        <div className="mt-5 space-y-3">
+                            <LegendRow label="Tested" value="70%" color="bg-blue-600" />
                             <LegendRow label="Non-tested" value="30%" color="bg-blue-100" />
-                        </CardContent>
-                    </Card>
-                </div>
+                        </div>
+                    </section>
+                </aside>
             </div>
         </div>
     );
@@ -218,20 +253,17 @@ function SummaryCard({ title, subtitle, variant }: SummaryCardProps) {
     const config = {
         success: {
             icon: Check,
-            bg: 'bg-green-100',
-            color: 'text-green-600',
+            iconWrapper: 'bg-green-100 text-green-600',
             shape: 'bg-green-300',
         },
         warning: {
             icon: Pause,
-            bg: 'bg-orange-100',
-            color: 'text-orange-500',
+            iconWrapper: 'bg-orange-100 text-orange-500',
             shape: 'bg-orange-300',
         },
         danger: {
             icon: AlertCircle,
-            bg: 'bg-red-100',
-            color: 'text-red-500',
+            iconWrapper: 'bg-red-100 text-red-500',
             shape: 'bg-red-300',
         },
     }[variant];
@@ -239,10 +271,10 @@ function SummaryCard({ title, subtitle, variant }: SummaryCardProps) {
     const Icon = config.icon;
 
     return (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5">
             <div className={`relative h-10 w-12 rounded-md ${config.shape}`}>
                 <div
-                    className={`absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full ${config.bg} ${config.color}`}
+                    className={`absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full ${config.iconWrapper}`}
                 >
                     <Icon className="h-3.5 w-3.5" />
                 </div>
@@ -264,11 +296,12 @@ type LegendRowProps = {
 
 function LegendRow({ label, value, color }: LegendRowProps) {
     return (
-        <div className="flex items-center justify-between text-xs text-slate-500">
+        <div className="flex items-center justify-between gap-4 text-xs text-slate-500">
             <div className="flex items-center gap-2">
                 <span className={`h-2 w-4 rounded-sm ${color}`} />
-                {label}
+                <span>{label}</span>
             </div>
+
             <span>{value}</span>
         </div>
     );
