@@ -1,117 +1,38 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Send } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 import { useAuth } from '@/features/auth/auth-provider';
+import { useChat } from '@/features/chat/use-chat';
+import type {
+    ChatMessage,
+    ConnectionStatus,
+} from '@/features/chat/use-chat';
 
 export const Route = createFileRoute('/chat')({
     component: ChatPage,
 });
 
-type ChatMessage = {
-    id: string;
-    text: string;
-    authorName: string;
-    authorEmail: string;
-    createdAt: string;
-};
-
-type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
-
-const WEB_SOCKET_URL = 'wss://ws.ifelse.io';
-const CHAT_STORAGE_KEY = 'testing-dashboard-work-chat';
-
 function ChatPage() {
     const { user } = useAuth();
 
-    const socketRef = useRef<WebSocket | null>(null);
-    const lastSentMessageRef = useRef<string>('');
-    const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-    const [status, setStatus] = useState<ConnectionStatus>('connecting');
-    const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState<ChatMessage[]>(() =>
-        getStoredMessages(),
-    );
-
-    useEffect(() => {
-        const socket = new WebSocket(WEB_SOCKET_URL);
-        socketRef.current = socket;
-
-        socket.addEventListener('open', () => {
-            setStatus('connected');
-        });
-
-        socket.addEventListener('message', (event: MessageEvent<string>) => {
-            const serverText = event.data.trim();
-
-            if (!serverText) {
-                return;
-            }
-
-            if (serverText.toLowerCase().startsWith('request served by')) {
-                return;
-            }
-
-            if (serverText === lastSentMessageRef.current) {
-                return;
-            }
-        });
-
-        socket.addEventListener('close', () => {
-            setStatus('disconnected');
-        });
-
-        socket.addEventListener('error', () => {
-            setStatus('error');
-        });
-
-        return () => {
-            socket.close();
-            socketRef.current = null;
-        };
-    }, []);
-
-    useEffect(() => {
-        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
-    }, [messages]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({
-            behavior: 'smooth',
-        });
-    }, [messages]);
+    const {
+        status,
+        message,
+        setMessage,
+        messages,
+        messagesEndRef,
+        sendMessage,
+    } = useChat({
+        user,
+    });
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-
-        const trimmedMessage = message.trim();
-
-        if (!trimmedMessage || !user) {
-            return;
-        }
-
-        const newMessage: ChatMessage = {
-            id: createMessageId(),
-            text: trimmedMessage,
-            authorName: user.name,
-            authorEmail: user.email,
-            createdAt: getCurrentTime(),
-        };
-
-        setMessages((currentMessages) => [...currentMessages, newMessage]);
-        setMessage('');
-        lastSentMessageRef.current = trimmedMessage;
-
-        const socket = socketRef.current;
-
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(trimmedMessage);
-        }
+        sendMessage();
     }
 
     return (
@@ -128,7 +49,9 @@ function ChatPage() {
             <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
                 <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                     <div>
-                        <h2 className="font-bold text-slate-950">Testing workspace</h2>
+                        <h2 className="font-bold text-slate-950">
+                            Testing workspace
+                        </h2>
                         <p className="text-xs text-slate-500">
                             Messages are saved locally and remain after logout.
                         </p>
@@ -208,8 +131,8 @@ function StatusBadge({ status }: StatusBadgeProps) {
         <span
             className={`rounded-full px-3 py-1 text-xs font-semibold ${statusConfig[status].className}`}
         >
-      {statusConfig[status].label}
-    </span>
+            {statusConfig[status].label}
+        </span>
     );
 }
 
@@ -258,55 +181,4 @@ function ChatBubble({ message, isOwnMessage }: ChatBubbleProps) {
             </div>
         </div>
     );
-}
-
-function getStoredMessages(): ChatMessage[] {
-    const storedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
-
-    if (!storedMessages) {
-        return [];
-    }
-
-    try {
-        const parsedMessages: unknown = JSON.parse(storedMessages);
-
-        if (!Array.isArray(parsedMessages)) {
-            return [];
-        }
-
-        return parsedMessages.filter(isChatMessage);
-    } catch {
-        return [];
-    }
-}
-
-function isChatMessage(value: unknown): value is ChatMessage {
-    if (typeof value !== 'object' || value === null) {
-        return false;
-    }
-
-    const message = value as Record<string, unknown>;
-
-    return (
-        typeof message.id === 'string' &&
-        typeof message.text === 'string' &&
-        typeof message.authorName === 'string' &&
-        typeof message.authorEmail === 'string' &&
-        typeof message.createdAt === 'string'
-    );
-}
-
-function createMessageId() {
-    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-        return crypto.randomUUID();
-    }
-
-    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function getCurrentTime() {
-    return new Intl.DateTimeFormat('en', {
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date());
 }
