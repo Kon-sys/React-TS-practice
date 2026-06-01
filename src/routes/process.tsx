@@ -34,6 +34,10 @@ function ProcessPage() {
   }
 
   function handleAddToCalendar() {
+    if (!event) {
+      return;
+    }
+
     downloadCalendarFile(event);
   }
 
