@@ -2,7 +2,13 @@ import { apiGet } from '@/shared/api/client';
 
 import { eventDetails } from './mock';
 
-import type { DashboardData, EventDetails, MedicineRow } from './types';
+import type {
+    DashboardData,
+    EventDetails,
+    MedicineRow,
+    MedicinesQueryParams,
+    PaginatedResponse,
+} from './types';
 
 type DummyJsonProduct = {
     id: number;
@@ -55,10 +61,10 @@ function delay<TData>(data: TData): Promise<TData> {
     });
 }
 
-async function getProducts(): Promise<DummyJsonProduct[]> {
-    const data = await apiGet<DummyJsonProductsResponse>('/products?limit=30');
-
-    return data.products;
+async function getProducts(limit = 30, skip = 0): Promise<DummyJsonProductsResponse> {
+    return await apiGet<DummyJsonProductsResponse>(
+        `/products?limit=${limit}&skip=${skip}`,
+    );
 }
 
 function mapProductToMedicine(product: DummyJsonProduct, index: number): MedicineRow {
@@ -146,15 +152,31 @@ function buildDashboardData(products: DummyJsonProduct[]): DashboardData {
 }
 
 export async function getDashboardData(): Promise<DashboardData> {
-    const products = await getProducts();
+    const data = await getProducts();
 
-    return buildDashboardData(products);
+    return buildDashboardData(data.products);
 }
 
-export async function getMedicines(): Promise<MedicineRow[]> {
-    const products = await getProducts();
+export async function getMedicines({
+                                       page,
+                                       pageSize,
+                                   }: MedicinesQueryParams): Promise<PaginatedResponse<MedicineRow>> {
+    const safePage = Math.max(page, 1);
+    const safePageSize = Math.max(pageSize, 1);
+    const skip = (safePage - 1) * safePageSize;
 
-    return products.slice(0, 6).map(mapProductToMedicine);
+    const data = await getProducts(safePageSize, skip);
+
+    return {
+        items: data.products.map((product, index) =>
+            mapProductToMedicine(product, data.skip + index),
+        ),
+        total: data.total,
+        skip: data.skip,
+        limit: data.limit,
+        page: safePage,
+        pageSize: safePageSize,
+    };
 }
 
 export function getEventDetails(): Promise<EventDetails> {

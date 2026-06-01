@@ -58,3 +58,17 @@ export type DashboardData = {
     approvalRates: SmallChartPoint[];
     testingProcess: TestingProcessPart[];
 };
+
+export type MedicinesQueryParams = {
+    page: number;
+    pageSize: number;
+};
+
+export type PaginatedResponse<TItem> = {
+    items: TItem[];
+    total: number;
+    skip: number;
+    limit: number;
+    page: number;
+    pageSize: number;
+};
