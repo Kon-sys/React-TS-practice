@@ -43,8 +43,13 @@ export type EventDetails = {
     title: string;
     place: string;
     address: string;
+    city: string;
     date: string;
     time: string;
+    calendarStart: string;
+    calendarEnd: string;
+    latitude: number;
+    longitude: number;
     manufacturer: string;
     mapImageUrl: string;
     tags: string[];

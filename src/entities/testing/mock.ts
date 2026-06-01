@@ -4,8 +4,13 @@ export const eventDetails: EventDetails = {
     title: 'Migracalm-X - new drug testing for chronic migraine',
     place: 'Tavern on the Greend, New York',
     address: '434 Rockaway Ave, Brooklyn New York, 11212-5636',
+    city: 'Brooklyn, New York',
     date: '28th — 2nd July 2022',
     time: '10 am - 4 pm Eastern Daylight Time',
+    calendarStart: '2022-06-28T10:00:00-04:00',
+    calendarEnd: '2022-06-28T16:00:00-04:00',
+    latitude: 40.6638,
+    longitude: -73.9235,
     manufacturer: 'Serenity Health Clinic',
     mapImageUrl:
         'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=900&q=80',
