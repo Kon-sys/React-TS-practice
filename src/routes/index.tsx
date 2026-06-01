@@ -1,5 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { AlertCircle, Check, Pause } from 'lucide-react';
+import { SummaryCard, LegendRow } from '@/features/dashboard/dashboard-components';
+
+import {
+    buildDashboardMetrics,
+    formatNumber,
+    formatTrend,
+    getTrendClassName,
+    testingProcessLegendColors,
+} from '@/features/dashboard/dashboard-metrics';
+
 import {
     Bar,
     BarChart,
@@ -288,168 +297,4 @@ function DashboardPage() {
             </div>
         </div>
     );
-}
-
-type SummaryCardProps = {
-    title: string;
-    subtitle: string;
-    variant: 'success' | 'warning' | 'danger';
-};
-
-function SummaryCard({ title, subtitle, variant }: SummaryCardProps) {
-    const config = {
-        success: {
-            icon: Check,
-            iconWrapper: 'bg-green-100 text-green-600',
-            shape: 'bg-green-300',
-        },
-        warning: {
-            icon: Pause,
-            iconWrapper: 'bg-orange-100 text-orange-500',
-            shape: 'bg-orange-300',
-        },
-        danger: {
-            icon: AlertCircle,
-            iconWrapper: 'bg-red-100 text-red-500',
-            shape: 'bg-red-300',
-        },
-    }[variant];
-
-    const Icon = config.icon;
-
-    return (
-        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div className={`relative h-10 w-12 rounded-md ${config.shape}`}>
-                <div
-                    className={`absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full ${config.iconWrapper}`}
-                >
-                    <Icon className="h-3.5 w-3.5" />
-                </div>
-            </div>
-
-            <div>
-                <h3 className="text-sm font-bold text-slate-950">{title}</h3>
-                <p className="text-xs text-slate-500">{subtitle}</p>
-            </div>
-        </div>
-    );
-}
-
-type LegendRowProps = {
-    label: string;
-    value: string;
-    color: string;
-};
-
-function LegendRow({ label, value, color }: LegendRowProps) {
-    return (
-        <div className="flex items-center justify-between gap-4 text-xs text-slate-500">
-            <div className="flex items-center gap-2">
-                <span className={`h-2 w-4 rounded-sm ${color}`} />
-                <span>{label}</span>
-            </div>
-
-            <span>{value}</span>
-        </div>
-    );
-}
-
-const testingProcessLegendColors = ['bg-blue-600', 'bg-blue-100', 'bg-sky-400'];
-
-type DashboardMetricsSource = {
-    totalTests: {
-        received: number;
-        completed: number;
-    }[];
-    testedDrugs: {
-        value: number;
-    }[];
-    approvalRates: {
-        value: number;
-    }[];
-    testingProcess: {
-        name: string;
-        value: number;
-    }[];
-};
-
-function buildDashboardMetrics(data: DashboardMetricsSource) {
-    const totalTestedDrugs = getTotalValue(data.testedDrugs);
-    const totalApprovals = getTotalValue(data.approvalRates);
-
-    const receivedTests = data.totalTests.reduce(
-        (sum, item) => sum + item.received,
-        0,
-    );
-    const completedTests = data.totalTests.reduce(
-        (sum, item) => sum + item.completed,
-        0,
-    );
-
-    const testsTotal = receivedTests + completedTests;
-    const completedTestsPercent = getPercent(completedTests, testsTotal);
-    const awaitingTestsPercent = Math.max(0, 100 - completedTestsPercent);
-
-    const testingProcessTotal = getTotalValue(data.testingProcess);
-    const testingProcessPercentages = data.testingProcess.map((item) => ({
-        name: item.name,
-        percent: getPercent(item.value, testingProcessTotal),
-    }));
-
-    return {
-        totalTestedDrugs,
-        testedDrugsTrend: getTrendPercent(data.testedDrugs),
-        totalApprovals,
-        approvalTrend: getTrendPercent(data.approvalRates),
-        completedTestsPercent,
-        awaitingTestsPercent,
-        peopleTestedPercent: completedTestsPercent,
-        peopleNotTestedPercent: awaitingTestsPercent,
-        testingProcessPercentages,
-    };
-}
-
-function getTotalValue(items: { value: number }[]) {
-    return items.reduce((sum, item) => sum + item.value, 0);
-}
-
-function getPercent(value: number, total: number) {
-    if (total <= 0) {
-        return 0;
-    }
-
-    return Math.round((value / total) * 100);
-}
-
-function getTrendPercent(items: { value: number }[]) {
-    if (items.length < 2) {
-        return 0;
-    }
-
-    const firstValue = items[0].value;
-    const lastValue = items[items.length - 1].value;
-
-    if (firstValue === 0) {
-        return 0;
-    }
-
-    return ((lastValue - firstValue) / firstValue) * 100;
-}
-
-function formatTrend(value: number) {
-    const roundedValue = Math.abs(value).toFixed(1);
-
-    return `${value >= 0 ? '+' : '-'}${roundedValue}%`;
-}
-
-function formatNumber(value: number) {
-    return new Intl.NumberFormat('en').format(value);
-}
-
-function getTrendClassName(value: number) {
-    if (value >= 0) {
-        return 'bg-green-100 text-green-600';
-    }
-
-    return 'bg-orange-100 text-orange-500';
 }
