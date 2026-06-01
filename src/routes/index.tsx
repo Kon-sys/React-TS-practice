@@ -42,6 +42,8 @@ function DashboardPage() {
         );
     }
 
+    const dashboardMetrics = buildDashboardMetrics(data);
+
     return (
         <div className="space-y-7">
             <div>
@@ -111,8 +113,16 @@ function DashboardPage() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-5">
-                        <LegendRow label="Received tests" value="Current period" color="bg-blue-600" />
-                        <LegendRow label="Completed tests" value="Previous period" color="bg-blue-200" />
+                        <LegendRow
+                            label="Received tests"
+                            value="Current period"
+                            color="bg-blue-600"
+                        />
+                        <LegendRow
+                            label="Completed tests"
+                            value="Previous period"
+                            color="bg-blue-200"
+                        />
                     </div>
                 </section>
 
@@ -127,10 +137,16 @@ function DashboardPage() {
                             </div>
 
                             <div className="text-right">
-                <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-bold text-orange-500">
-                  -6.8%
-                </span>
-                                <p className="mt-1 text-sm font-bold text-slate-950">16,247</p>
+                                <span
+                                    className={`rounded-full px-2 py-1 text-[10px] font-bold ${getTrendClassName(
+                                        dashboardMetrics.testedDrugsTrend,
+                                    )}`}
+                                >
+                                    {formatTrend(dashboardMetrics.testedDrugsTrend)}
+                                </span>
+                                <p className="mt-1 text-sm font-bold text-slate-950">
+                                    {formatNumber(dashboardMetrics.totalTestedDrugs)}
+                                </p>
                             </div>
                         </div>
 
@@ -145,8 +161,16 @@ function DashboardPage() {
                         </div>
 
                         <div className="mt-4 space-y-3">
-                            <LegendRow label="Completed" value="52%" color="bg-blue-600" />
-                            <LegendRow label="Awaiting results" value="48%" color="bg-blue-100" />
+                            <LegendRow
+                                label="Completed"
+                                value={`${dashboardMetrics.completedTestsPercent}%`}
+                                color="bg-blue-600"
+                            />
+                            <LegendRow
+                                label="Awaiting results"
+                                value={`${dashboardMetrics.awaitingTestsPercent}%`}
+                                color="bg-blue-100"
+                            />
                         </div>
                     </section>
 
@@ -160,10 +184,16 @@ function DashboardPage() {
                             </div>
 
                             <div className="text-right">
-                <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-bold text-orange-500">
-                  +26.5%
-                </span>
-                                <p className="mt-1 text-sm font-bold text-slate-950">356</p>
+                                <span
+                                    className={`rounded-full px-2 py-1 text-[10px] font-bold ${getTrendClassName(
+                                        dashboardMetrics.approvalTrend,
+                                    )}`}
+                                >
+                                    {formatTrend(dashboardMetrics.approvalTrend)}
+                                </span>
+                                <p className="mt-1 text-sm font-bold text-slate-950">
+                                    {formatNumber(dashboardMetrics.totalApprovals)}
+                                </p>
                             </div>
                         </div>
 
@@ -216,9 +246,18 @@ function DashboardPage() {
                         </div>
 
                         <div className="mt-4 space-y-3">
-                            <LegendRow label="Preclinical testing" value="72%" color="bg-blue-600" />
-                            <LegendRow label="Clinical trials" value="18%" color="bg-blue-100" />
-                            <LegendRow label="Regulatory approval" value="10%" color="bg-sky-400" />
+                            {dashboardMetrics.testingProcessPercentages.map((item, index) => (
+                                <LegendRow
+                                    key={item.name}
+                                    label={item.name}
+                                    value={`${item.percent}%`}
+                                    color={
+                                        testingProcessLegendColors[
+                                        index % testingProcessLegendColors.length
+                                            ]
+                                    }
+                                />
+                            ))}
                         </div>
                     </section>
 
@@ -233,8 +272,16 @@ function DashboardPage() {
                         <div className="mx-auto h-20 w-36 rounded-t-full border-[12px] border-b-0 border-blue-600 border-r-blue-100" />
 
                         <div className="mt-5 space-y-3">
-                            <LegendRow label="Tested" value="70%" color="bg-blue-600" />
-                            <LegendRow label="Non-tested" value="30%" color="bg-blue-100" />
+                            <LegendRow
+                                label="Tested"
+                                value={`${dashboardMetrics.peopleTestedPercent}%`}
+                                color="bg-blue-600"
+                            />
+                            <LegendRow
+                                label="Non-tested"
+                                value={`${dashboardMetrics.peopleNotTestedPercent}%`}
+                                color="bg-blue-100"
+                            />
                         </div>
                     </section>
                 </aside>
@@ -305,4 +352,104 @@ function LegendRow({ label, value, color }: LegendRowProps) {
             <span>{value}</span>
         </div>
     );
+}
+
+const testingProcessLegendColors = ['bg-blue-600', 'bg-blue-100', 'bg-sky-400'];
+
+type DashboardMetricsSource = {
+    totalTests: {
+        received: number;
+        completed: number;
+    }[];
+    testedDrugs: {
+        value: number;
+    }[];
+    approvalRates: {
+        value: number;
+    }[];
+    testingProcess: {
+        name: string;
+        value: number;
+    }[];
+};
+
+function buildDashboardMetrics(data: DashboardMetricsSource) {
+    const totalTestedDrugs = getTotalValue(data.testedDrugs);
+    const totalApprovals = getTotalValue(data.approvalRates);
+
+    const receivedTests = data.totalTests.reduce(
+        (sum, item) => sum + item.received,
+        0,
+    );
+    const completedTests = data.totalTests.reduce(
+        (sum, item) => sum + item.completed,
+        0,
+    );
+
+    const testsTotal = receivedTests + completedTests;
+    const completedTestsPercent = getPercent(completedTests, testsTotal);
+    const awaitingTestsPercent = Math.max(0, 100 - completedTestsPercent);
+
+    const testingProcessTotal = getTotalValue(data.testingProcess);
+    const testingProcessPercentages = data.testingProcess.map((item) => ({
+        name: item.name,
+        percent: getPercent(item.value, testingProcessTotal),
+    }));
+
+    return {
+        totalTestedDrugs,
+        testedDrugsTrend: getTrendPercent(data.testedDrugs),
+        totalApprovals,
+        approvalTrend: getTrendPercent(data.approvalRates),
+        completedTestsPercent,
+        awaitingTestsPercent,
+        peopleTestedPercent: completedTestsPercent,
+        peopleNotTestedPercent: awaitingTestsPercent,
+        testingProcessPercentages,
+    };
+}
+
+function getTotalValue(items: { value: number }[]) {
+    return items.reduce((sum, item) => sum + item.value, 0);
+}
+
+function getPercent(value: number, total: number) {
+    if (total <= 0) {
+        return 0;
+    }
+
+    return Math.round((value / total) * 100);
+}
+
+function getTrendPercent(items: { value: number }[]) {
+    if (items.length < 2) {
+        return 0;
+    }
+
+    const firstValue = items[0].value;
+    const lastValue = items[items.length - 1].value;
+
+    if (firstValue === 0) {
+        return 0;
+    }
+
+    return ((lastValue - firstValue) / firstValue) * 100;
+}
+
+function formatTrend(value: number) {
+    const roundedValue = Math.abs(value).toFixed(1);
+
+    return `${value >= 0 ? '+' : '-'}${roundedValue}%`;
+}
+
+function formatNumber(value: number) {
+    return new Intl.NumberFormat('en').format(value);
+}
+
+function getTrendClassName(value: number) {
+    if (value >= 0) {
+        return 'bg-green-100 text-green-600';
+    }
+
+    return 'bg-orange-100 text-orange-500';
 }
