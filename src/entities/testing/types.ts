@@ -43,8 +43,13 @@ export type EventDetails = {
     title: string;
     place: string;
     address: string;
+    city: string;
     date: string;
     time: string;
+    calendarStart: string;
+    calendarEnd: string;
+    latitude: number;
+    longitude: number;
     manufacturer: string;
     mapImageUrl: string;
     tags: string[];
@@ -57,4 +62,18 @@ export type DashboardData = {
     testedDrugs: SmallChartPoint[];
     approvalRates: SmallChartPoint[];
     testingProcess: TestingProcessPart[];
+};
+
+export type MedicinesQueryParams = {
+    page: number;
+    pageSize: number;
+};
+
+export type PaginatedResponse<TItem> = {
+    items: TItem[];
+    total: number;
+    skip: number;
+    limit: number;
+    page: number;
+    pageSize: number;
 };

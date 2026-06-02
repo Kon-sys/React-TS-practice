@@ -9,10 +9,14 @@ export function useDashboardQuery() {
     });
 }
 
-export function useMedicinesQuery() {
+export function useMedicinesQuery(page: number, pageSize: number) {
     return useQuery({
-        queryKey: ['medicines'],
-        queryFn: getMedicines,
+        queryKey: ['medicines', page, pageSize],
+        queryFn: () =>
+            getMedicines({
+                page,
+                pageSize,
+            }),
     });
 }
 

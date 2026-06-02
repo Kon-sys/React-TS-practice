@@ -1,22 +1,41 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Check, X } from 'lucide-react';
+import { useState } from 'react';
 
 import { useMedicinesQuery } from '@/entities/testing/queries';
+
+import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute('/tables')({
   component: TablesPage,
 });
 
+const PAGE_SIZE = 6;
+
 function TablesPage() {
-  const { data: medicines, isLoading, isError } = useMedicinesQuery();
+  const [page, setPage] = useState(1);
+
+  const {
+    data: medicinesData,
+    isLoading,
+    isError,
+    isFetching,
+  } = useMedicinesQuery(page, PAGE_SIZE);
 
   if (isLoading) {
     return <div className="text-sm text-slate-500">Loading table...</div>;
   }
 
-  if (isError || !medicines) {
+  if (isError || !medicinesData) {
     return <div className="text-sm text-red-500">Failed to load medicines</div>;
   }
+
+  const medicines = medicinesData.items;
+  const totalPages = Math.max(1, Math.ceil(medicinesData.total / PAGE_SIZE));
+  const startItem = medicines.length > 0 ? medicinesData.skip + 1 : 0;
+  const endItem = medicinesData.skip + medicines.length;
+  const isFirstPage = page === 1;
+  const isLastPage = page >= totalPages;
 
   return (
       <div className="space-y-5">
@@ -121,10 +140,40 @@ function TablesPage() {
           </table>
         </div>
 
-        <p className="text-xs text-slate-500">
-          1 to {medicines.length} items of {medicines.length}{' '}
-          <span className="ml-3 text-blue-600">View all ›</span>
-        </p>
+        <div className="flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            {startItem} to {endItem} items of {medicinesData.total}
+            {isFetching ? <span className="ml-2 text-blue-600">Updating...</span> : null}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isFirstPage || isFetching}
+                onClick={() => setPage((currentPage) => Math.max(currentPage - 1, 1))}
+            >
+              Previous
+            </Button>
+
+            <span className="px-2">
+            Page {page} of {totalPages}
+          </span>
+
+            <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isLastPage || isFetching}
+                onClick={() =>
+                    setPage((currentPage) => Math.min(currentPage + 1, totalPages))
+                }
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
   );
 }

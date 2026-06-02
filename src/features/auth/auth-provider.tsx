@@ -7,15 +7,26 @@ import {
 } from 'react';
 import type { PropsWithChildren } from 'react';
 
+import {
+    clearStoredCurrentUser,
+    getStoredCurrentUser,
+    getStoredUsers,
+    saveStoredCurrentUser,
+    saveStoredUsers,
+} from './auth-storage';
+import {
+    createUserId,
+    toAuthUser,
+    validateLoginPayload,
+    validateRegisterPayload,
+} from './auth-utils';
+
 import type {
     AuthUser,
     LoginPayload,
     RegisterPayload,
     StoredUser,
 } from './types';
-
-const AUTH_USER_KEY = 'testing-dashboard-current-user';
-const AUTH_USERS_KEY = 'testing-dashboard-users';
 
 type AuthContextValue = {
     user: AuthUser | null;
@@ -27,98 +38,16 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function normalizeEmail(email: string) {
-    return email.trim().toLowerCase();
-}
-
-function createUserId() {
-    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-        return crypto.randomUUID();
-    }
-
-    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function isAuthUser(value: unknown): value is AuthUser {
-    if (typeof value !== 'object' || value === null) {
-        return false;
-    }
-
-    const user = value as Record<string, unknown>;
-
-    return (
-        typeof user.id === 'string' &&
-        typeof user.name === 'string' &&
-        typeof user.email === 'string' &&
-        user.role === 'user'
-    );
-}
-
-function isStoredUser(value: unknown): value is StoredUser {
-    if (!isAuthUser(value)) {
-        return false;
-    }
-
-    const user = value as Record<string, unknown>;
-
-    return typeof user.password === 'string';
-}
-
-function getStoredUsers(): StoredUser[] {
-    const storedUsers = localStorage.getItem(AUTH_USERS_KEY);
-
-    if (!storedUsers) {
-        return [];
-    }
-
-    try {
-        const parsedUsers: unknown = JSON.parse(storedUsers);
-
-        if (!Array.isArray(parsedUsers)) {
-            return [];
-        }
-
-        return parsedUsers.filter(isStoredUser);
-    } catch {
-        return [];
-    }
-}
-
-function saveStoredUsers(users: StoredUser[]) {
-    localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
-}
-
-function getStoredCurrentUser(): AuthUser | null {
-    const storedUser = localStorage.getItem(AUTH_USER_KEY);
-
-    if (!storedUser) {
-        return null;
-    }
-
-    try {
-        const parsedUser: unknown = JSON.parse(storedUser);
-
-        if (isAuthUser(parsedUser)) {
-            return parsedUser;
-        }
-
-        return null;
-    } catch {
-        return null;
-    }
-}
-
 export function AuthProvider({ children }: PropsWithChildren) {
     const [user, setUser] = useState<AuthUser | null>(() =>
         getStoredCurrentUser(),
     );
 
     const login = useCallback((payload: LoginPayload) => {
-        const email = normalizeEmail(payload.email);
-        const password = payload.password;
+        const { email, password, error } = validateLoginPayload(payload);
 
-        if (!email || !password) {
-            return 'Email and password are required';
+        if (error) {
+            return error;
         }
 
         const users = getStoredUsers();
@@ -128,34 +57,19 @@ export function AuthProvider({ children }: PropsWithChildren) {
             return 'Invalid email or password';
         }
 
-        const currentUser: AuthUser = {
-            id: foundUser.id,
-            name: foundUser.name,
-            email: foundUser.email,
-            role: foundUser.role,
-        };
+        const currentUser = toAuthUser(foundUser);
 
         setUser(currentUser);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(currentUser));
+        saveStoredCurrentUser(currentUser);
 
         return null;
     }, []);
 
     const register = useCallback((payload: RegisterPayload) => {
-        const name = payload.name.trim();
-        const email = normalizeEmail(payload.email);
-        const password = payload.password;
+        const { name, email, password, error } = validateRegisterPayload(payload);
 
-        if (name.length < 2) {
-            return 'Name must contain at least 2 characters';
-        }
-
-        if (!email.includes('@') || !email.includes('.')) {
-            return 'Enter a valid email';
-        }
-
-        if (password.length < 6) {
-            return 'Password must contain at least 6 characters';
+        if (error) {
+            return error;
         }
 
         const users = getStoredUsers();
@@ -175,22 +89,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
         saveStoredUsers([...users, newUser]);
 
-        const currentUser: AuthUser = {
-            id: newUser.id,
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role,
-        };
+        const currentUser = toAuthUser(newUser);
 
         setUser(currentUser);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(currentUser));
+        saveStoredCurrentUser(currentUser);
 
         return null;
     }, []);
 
     const logout = useCallback(() => {
         setUser(null);
-        localStorage.removeItem(AUTH_USER_KEY);
+        clearStoredCurrentUser();
     }, []);
 
     const value = useMemo<AuthContextValue>(

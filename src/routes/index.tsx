@@ -1,5 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { AlertCircle, Check, Pause } from 'lucide-react';
+import { SummaryCard, LegendRow } from '@/features/dashboard/dashboard-components';
+
+import {
+    buildDashboardMetrics,
+    formatNumber,
+    formatTrend,
+    getTrendClassName,
+    testingProcessLegendColors,
+} from '@/features/dashboard/dashboard-metrics';
+
 import {
     Bar,
     BarChart,
@@ -41,6 +50,8 @@ function DashboardPage() {
             </div>
         );
     }
+
+    const dashboardMetrics = buildDashboardMetrics(data);
 
     return (
         <div className="space-y-7">
@@ -111,8 +122,16 @@ function DashboardPage() {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-5">
-                        <LegendRow label="Received tests" value="Current period" color="bg-blue-600" />
-                        <LegendRow label="Completed tests" value="Previous period" color="bg-blue-200" />
+                        <LegendRow
+                            label="Received tests"
+                            value="Current period"
+                            color="bg-blue-600"
+                        />
+                        <LegendRow
+                            label="Completed tests"
+                            value="Previous period"
+                            color="bg-blue-200"
+                        />
                     </div>
                 </section>
 
@@ -127,10 +146,16 @@ function DashboardPage() {
                             </div>
 
                             <div className="text-right">
-                <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-bold text-orange-500">
-                  -6.8%
-                </span>
-                                <p className="mt-1 text-sm font-bold text-slate-950">16,247</p>
+                                <span
+                                    className={`rounded-full px-2 py-1 text-[10px] font-bold ${getTrendClassName(
+                                        dashboardMetrics.testedDrugsTrend,
+                                    )}`}
+                                >
+                                    {formatTrend(dashboardMetrics.testedDrugsTrend)}
+                                </span>
+                                <p className="mt-1 text-sm font-bold text-slate-950">
+                                    {formatNumber(dashboardMetrics.totalTestedDrugs)}
+                                </p>
                             </div>
                         </div>
 
@@ -145,8 +170,16 @@ function DashboardPage() {
                         </div>
 
                         <div className="mt-4 space-y-3">
-                            <LegendRow label="Completed" value="52%" color="bg-blue-600" />
-                            <LegendRow label="Awaiting results" value="48%" color="bg-blue-100" />
+                            <LegendRow
+                                label="Completed"
+                                value={`${dashboardMetrics.completedTestsPercent}%`}
+                                color="bg-blue-600"
+                            />
+                            <LegendRow
+                                label="Awaiting results"
+                                value={`${dashboardMetrics.awaitingTestsPercent}%`}
+                                color="bg-blue-100"
+                            />
                         </div>
                     </section>
 
@@ -160,10 +193,16 @@ function DashboardPage() {
                             </div>
 
                             <div className="text-right">
-                <span className="rounded-full bg-orange-100 px-2 py-1 text-[10px] font-bold text-orange-500">
-                  +26.5%
-                </span>
-                                <p className="mt-1 text-sm font-bold text-slate-950">356</p>
+                                <span
+                                    className={`rounded-full px-2 py-1 text-[10px] font-bold ${getTrendClassName(
+                                        dashboardMetrics.approvalTrend,
+                                    )}`}
+                                >
+                                    {formatTrend(dashboardMetrics.approvalTrend)}
+                                </span>
+                                <p className="mt-1 text-sm font-bold text-slate-950">
+                                    {formatNumber(dashboardMetrics.totalApprovals)}
+                                </p>
                             </div>
                         </div>
 
@@ -216,9 +255,18 @@ function DashboardPage() {
                         </div>
 
                         <div className="mt-4 space-y-3">
-                            <LegendRow label="Preclinical testing" value="72%" color="bg-blue-600" />
-                            <LegendRow label="Clinical trials" value="18%" color="bg-blue-100" />
-                            <LegendRow label="Regulatory approval" value="10%" color="bg-sky-400" />
+                            {dashboardMetrics.testingProcessPercentages.map((item, index) => (
+                                <LegendRow
+                                    key={item.name}
+                                    label={item.name}
+                                    value={`${item.percent}%`}
+                                    color={
+                                        testingProcessLegendColors[
+                                        index % testingProcessLegendColors.length
+                                            ]
+                                    }
+                                />
+                            ))}
                         </div>
                     </section>
 
@@ -233,76 +281,20 @@ function DashboardPage() {
                         <div className="mx-auto h-20 w-36 rounded-t-full border-[12px] border-b-0 border-blue-600 border-r-blue-100" />
 
                         <div className="mt-5 space-y-3">
-                            <LegendRow label="Tested" value="70%" color="bg-blue-600" />
-                            <LegendRow label="Non-tested" value="30%" color="bg-blue-100" />
+                            <LegendRow
+                                label="Tested"
+                                value={`${dashboardMetrics.peopleTestedPercent}%`}
+                                color="bg-blue-600"
+                            />
+                            <LegendRow
+                                label="Non-tested"
+                                value={`${dashboardMetrics.peopleNotTestedPercent}%`}
+                                color="bg-blue-100"
+                            />
                         </div>
                     </section>
                 </aside>
             </div>
-        </div>
-    );
-}
-
-type SummaryCardProps = {
-    title: string;
-    subtitle: string;
-    variant: 'success' | 'warning' | 'danger';
-};
-
-function SummaryCard({ title, subtitle, variant }: SummaryCardProps) {
-    const config = {
-        success: {
-            icon: Check,
-            iconWrapper: 'bg-green-100 text-green-600',
-            shape: 'bg-green-300',
-        },
-        warning: {
-            icon: Pause,
-            iconWrapper: 'bg-orange-100 text-orange-500',
-            shape: 'bg-orange-300',
-        },
-        danger: {
-            icon: AlertCircle,
-            iconWrapper: 'bg-red-100 text-red-500',
-            shape: 'bg-red-300',
-        },
-    }[variant];
-
-    const Icon = config.icon;
-
-    return (
-        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-5">
-            <div className={`relative h-10 w-12 rounded-md ${config.shape}`}>
-                <div
-                    className={`absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full ${config.iconWrapper}`}
-                >
-                    <Icon className="h-3.5 w-3.5" />
-                </div>
-            </div>
-
-            <div>
-                <h3 className="text-sm font-bold text-slate-950">{title}</h3>
-                <p className="text-xs text-slate-500">{subtitle}</p>
-            </div>
-        </div>
-    );
-}
-
-type LegendRowProps = {
-    label: string;
-    value: string;
-    color: string;
-};
-
-function LegendRow({ label, value, color }: LegendRowProps) {
-    return (
-        <div className="flex items-center justify-between gap-4 text-xs text-slate-500">
-            <div className="flex items-center gap-2">
-                <span className={`h-2 w-4 rounded-sm ${color}`} />
-                <span>{label}</span>
-            </div>
-
-            <span>{value}</span>
         </div>
     );
 }
